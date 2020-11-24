@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Use correct character set. -->
+  <meta charset="utf-8" />
+  <!-- Tell IE to use the latest, best version. -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+  <title>Hello World!</title>
+  <script src="Build/Cesium/Cesium.js"></script>
+  <style>
+    @import url(../templates/bucket.css);
+
+    #toolbar {
+      background: rgba(42, 42, 42, 0.8);
+      padding: 4px;
+      border-radius: 4px;
+    }
+    #toolbar input {
+      vertical-align: middle;
+      padding-top: 2px;
+      padding-bottom: 2px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="cesiumContainer" class="fullSize"></div>
+  <div id="loadingOverlay"><h1>Loading...</h1></div>
+  <div id="toolbar">
+    <div>Height</div>
+    <input type="range" min="-100.0" max="100.0" step="1" data-bind="value: height, valueUpdate: 'input'">
+    <input type="text" size="5" data-bind="value: height">
+  </div>
+
+  <script>
+    // 设置默认登录key
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJhNDYwNjRiOS1hYzc5LTQ5ZDMtYjBkMi1lZWZiOGNmNTRkMmQiLCJpZCI6MzgwNTYsImlhdCI6MTYwNTg0MjAwMH0.Yym81tCcXVKawAyD_N_vT-2qWd7dN3c3ZJgwXw41ahk';
+    // var viewer = new Cesium.Viewer("cesiumContainer");
+    var viewer = new Cesium.Viewer("cesiumContainer", {
+      shadows: true,
+    });
+    // viewer.scene.debugShowFramesPerSecond = true; // 右上角显示帧率
+    // 删除默认的基础图层
+    viewer.imageryLayers.remove(viewer.imageryLayers.get(0));
+    // 添加一个自定义的图层
+    var layer = viewer.imageryLayers.addImageryProvider(
+      new Cesium.IonImageryProvider({ assetId: 3954 })
+    );
+
+    viewer.scene.globe.depthTestAgainstTerrain = true;
+
+    var viewModel = {
+      height: 0,
+    };
+
+    Cesium.knockout.track(viewModel);
+
+    var toolbar = document.getElementById("toolbar");
+    Cesium.knockout.applyBindings(viewModel, toolbar);
+
+    var tileset = new Cesium.Cesium3DTileset({
+      url: '../tileset.json',
+    });
+
+    tileset.readyPromise
+      .then(function (tileset) {
+        viewer.scene.primitives.add(tileset);
+        viewer.zoomTo(
+          tileset,
+          new Cesium.HeadingPitchRange(
+            0.0,
+            -0.5,
+            tileset.boundingSphere.radius * 2.0
+          )
+        );
+      })
+      .otherwise(function (error) {
+        console.log(error);
+      });
+
+    Cesium.knockout
+      .getObservable(viewModel, "height")
+      .subscribe(function (height) {
+        height = Number(height);
+        if (isNaN(height)) {
+          return;
+        }
+
+        var cartographic = Cesium.Cartographic.fromCartesian(
+          tileset.boundingSphere.center
+        );
+        var surface = Cesium.Cartesian3.fromRadians(
+          cartographic.longitude,
+          cartographic.latitude,
+          0.0
+        );
+        var offset = Cesium.Cartesian3.fromRadians(
+          cartographic.longitude,
+          cartographic.latitude,
+          height
+        );
+        var translation = Cesium.Cartesian3.subtract(
+          offset,
+          surface,
+          new Cesium.Cartesian3()
+        );
+        tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+      });
+
+
+  </script>
+</body>
+
+</html>

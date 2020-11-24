@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8" />
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <title>Hello World!</title>
+    <script src="../Build/Cesium/Cesium.js"></script>
+    <style>
+      @import url(../Build/Cesium/Widgets/widgets.css);
+      html,
+      body,
+      #cesiumContainer {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cesiumContainer"></div>
+
+    <script>
+      // 设置默认登录key
+      Cesium.Ion.defaultAccessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJhNDYwNjRiOS1hYzc5LTQ5ZDMtYjBkMi1lZWZiOGNmNTRkMmQiLCJpZCI6MzgwNTYsImlhdCI6MTYwNTg0MjAwMH0.Yym81tCcXVKawAyD_N_vT-2qWd7dN3c3ZJgwXw41ahk";
+      var viewer = new Cesium.Viewer("cesiumContainer", {
+        // geocoder:false,
+        // homeButton:false,
+        // sceneModePicker:false,
+        // baseLayerPicker:false,
+        // navigationHelpButton:false,
+        // animation:false,
+        // creditContainer:"credit",
+        // timeline:false,
+        // fullscreenButton:false,
+        // vrButton:false
+      });
+      viewer.scene.debugShowFramesPerSecond = true; // 显示帧率
+      // Remove default base layer
+      viewer.imageryLayers.remove(viewer.imageryLayers.get(0));
+
+      // Add Sentinel-2 imagery
+      var layer = viewer.imageryLayers.addImageryProvider(
+        new Cesium.IonImageryProvider({ assetId: 3954 })
+      );
+
+      var redBox = viewer.entities.add({
+        name: "红盒子",
+        position: Cesium.Cartesian3.fromDegrees(-107.0, 40.0, 250000.0),
+        box: {
+          dimensions: new Cesium.Cartesian3(400000.0, 300000.0, 500000.0),
+          material: Cesium.Color.RED.withAlpha(0.5),
+          outline: true,
+          outlineColor: Cesium.Color.BLACK,
+        },
+      });
+
+      viewer.zoomTo(viewer.entities);
+
+      // var czml = [{
+      //     "id" : "document",
+      //     "name" : "box",
+      //     "version" : "1.0"
+      // },{
+      //     "id" : "shape2",
+      //     "name" : "Red box with black outline",
+      //     "position" : {
+      //         "cartographicDegrees" : [-107.0, 40.0, 300000.0]
+      //     },
+      //     "box" : {
+      //         "dimensions" : {
+      //             "cartesian": [400000.0, 300000.0, 500000.0]
+      //         },
+      //         "material" : {
+      //             "solidColor" : {
+      //                 "color" : {
+      //                     "rgba" : [255, 0, 0, 128]
+      //                 }
+      //             }
+      //         },
+      //         "outline" : true,
+      //         "outlineColor" : {
+      //             "rgba" : [0, 0, 0, 255]
+      //         }
+      //     }
+      // }];
+
+      // var dataSourcePromise = Cesium.CzmlDataSource.load(czml);
+      // viewer.dataSources.add(dataSourcePromise);
+      // viewer.zoomTo(dataSourcePromise);
+    </script>
+  </body>
+</html>
