@@ -1,7 +1,14 @@
 // This file is automatically rebuilt by the Cesium build process.
-var hello_world_index = 96;
+var hello_world_index = 66;
 var VERSION = "1.75";
 var gallery_demos = [
+  //-------添加开始-------
+  {
+    name: "3D Tiles Adjust Height-rotate",
+    date: 1504127120952,
+    img: "3D Tiles Adjust Height-rotate.jpg",
+  },
+  //-------添加结束-------
   {
     name: "3D Models",
     isNew: false,

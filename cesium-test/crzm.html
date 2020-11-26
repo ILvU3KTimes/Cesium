@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8" />
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <title>读取crzm文件</title>
+    <script src="Build/Cesium/Cesium.js"></script>
+    <style>
+      @import url(../templates/bucket.css);
+    </style>
+  </head>
+
+  <body>
+    <div id="cesiumContainer" class="fullSize"></div>
+    <div id="loadingOverlay">
+      <h1>Loading...</h1>
+    </div>
+    <script>
+      // 设置默认登录key
+      Cesium.Ion.defaultAccessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJhNDYwNjRiOS1hYzc5LTQ5ZDMtYjBkMi1lZWZiOGNmNTRkMmQiLCJpZCI6MzgwNTYsImlhdCI6MTYwNTg0MjAwMH0.Yym81tCcXVKawAyD_N_vT-2qWd7dN3c3ZJgwXw41ahk";
+      // var viewer = new Cesium.Viewer("cesiumContainer");
+      var viewer = new Cesium.Viewer("cesiumContainer", {
+        shouldAnimate: true,
+      });
+      // viewer.scene.debugShowFramesPerSecond = true; // 右上角显示帧率
+      // 删除默认的基础图层
+      viewer.imageryLayers.remove(viewer.imageryLayers.get(0));
+      // 添加一个自定义的图层
+      var layer = viewer.imageryLayers.addImageryProvider(
+        new Cesium.IonImageryProvider({ assetId: 3954 })
+      );
+      // 添加地图建筑物
+      var tileset = viewer.scene.primitives.add(
+        new Cesium.Cesium3DTileset({
+          url: Cesium.IonResource.fromAssetId(75343),
+        })
+      );
+
+      var dronePromise = Cesium.CzmlDataSource.load("Data/sampleFlight.czml");
+
+      var drone;
+      dronePromise.then(function (dataSource) {
+        viewer.dataSources.add(dataSource);
+        // 使用id获取在CZML 数据中定义的无人机entity
+        drone = dataSource.entities.getById("Aircraft/Aircraft1");
+        // 附加一些三维模型
+        drone.model = {
+          uri: "Data/CesiumDrone.gltf",
+          minimumPixelSize: 100,
+          maximumScale: 500,
+          silhouetteColor: Cesium.Color.WHITE,
+          silhouetteSize: 2,
+        };
+
+        // 实时计算飞行时，模型的巡航角度
+        drone.orientation = new Cesium.VelocityOrientationProperty(
+          drone.position
+        );
+
+        // 圆滑路径，使路径相对平滑过渡 插值过渡
+        drone.position.setInterpolationOptions({
+          interpolationAlgorithm: Cesium.HermitePolynomialApproximation, //插值算法
+          interpolationDegree: 2,
+        });
+
+        // 镜头跟随
+        drone.viewFrom = new Cesium.Cartesian3(0, -30, 30);
+        viewer.trackedEntity = drone;
+      });
+    </script>
+  </body>
+</html>
